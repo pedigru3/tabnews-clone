@@ -1,32 +1,50 @@
-const { exec } = require("node:child_process")
+const { spawn } = require("node:child_process")
 
-function servicesInit() {
-  const devProcess = exec(
-    "npm run services:up && npm run services:wait:database && npm run migrations:up && next dev",
-  )
-
-  devProcess.stdout.on("data", (data) => {
-    process.stdout.write(data)
+function runCommand(command, args) {
+  // eslint-disable-next-line no-undef
+  return new Promise((resolve, reject) => {
+    const proc = spawn(command, args, { stdio: "inherit" })
+    proc.on("exit", (code) => (code === 0 ? resolve() : reject(code)))
   })
+}
 
-  console.log("Verificando serviços...")
+let servicesAreRunning = false
 
-  process.on("SIGINT", () => {
-    stopDatabase()
-  })
+async function startServicesAndDev() {
+  try {
+    await runCommand("npm", ["run", "services:up"])
+    servicesAreRunning = true
 
-  function stopDatabase() {
-    exec(
-      "docker compose -f infra/compose.yaml stop",
-      (error, stdout, stderr) => {
-        if (error) {
-          console.error(`Erro ao parar database: ${error}`)
-        }
-        console.log(stdout)
-        console.error(stderr)
-      },
-    )
+    await runCommand("npm", ["run", "services:wait:database"])
+
+    await runCommand("npm", ["run", "migrations:up"])
+
+    const nextProcess = spawn("npx", ["next", "dev"], { stdio: "inherit" })
+
+    nextProcess.on("exit", async (code) => {
+      await stopServices()
+      process.exit(code)
+    })
+
+    process.on("SIGINT", () => {
+      console.log("\nRecebido Ctrl+C. Finalizando...")
+      nextProcess.kill("SIGINT")
+    })
+  } catch (err) {
+    await stopServices()
+    process.exit(typeof err === "number" ? err : 1)
   }
 }
 
-servicesInit()
+/**
+ * Encerra os serviços se estavam rodando
+ */
+async function stopServices() {
+  if (servicesAreRunning) {
+    await runCommand("npm", ["run", "services:down"])
+    servicesAreRunning = false
+  }
+}
+
+// Inicia todo o fluxo
+startServicesAndDev()
