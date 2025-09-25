@@ -20,6 +20,8 @@ function onErrorHandler(error, request, response) {
 
 function onNoMatchHanler(request, response) {
   const publicErrorObject = new MethodNotAllowedError()
+
+  console.log("oi")
   response.status(publicErrorObject.statusCode).json(publicErrorObject)
 }
 
