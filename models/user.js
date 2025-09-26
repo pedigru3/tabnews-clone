@@ -7,7 +7,7 @@ async function create(userInputValues) {
   await validateUniqueUsername(userInputValues.username)
   await hashPasswordInObject(userInputValues)
 
-  const newUser = runInsertQuery(userInputValues)
+  const newUser = await runInsertQuery(userInputValues)
   return newUser
 
   async function hashPasswordInObject(userInputValues) {
@@ -35,8 +35,7 @@ async function create(userInputValues) {
 }
 
 async function findOneByUsername(username) {
-  const userFound = runSelectQuery(username)
-
+  const userFound = await runSelectQuery(username)
   return userFound
 
   async function runSelectQuery(username) {
