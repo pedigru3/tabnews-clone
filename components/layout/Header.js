@@ -1,4 +1,9 @@
+import { useRouter } from "next/router"
+import Button from "components/common/Button.js"
+
 export default function Header() {
+  const router = useRouter()
+
   return (
     <header
       style={{
@@ -23,24 +28,27 @@ export default function Header() {
             margin: 0,
             fontSize: "1.8rem",
             fontWeight: "bold",
+            cursor: "pointer",
           }}
+          onClick={() => router.push("/")}
         >
           IgrejaConnect
         </h1>
-        <nav>
-          <button
+        <nav style={{ display: "flex", gap: "0.5rem" }}>
+          <Button
+            variant="header"
+            onClick={() => router.push("/login")}
             style={{
-              background: "#667eea",
-              color: "white",
-              border: "none",
-              padding: "0.5rem 1rem",
-              borderRadius: "5px",
-              cursor: "pointer",
-              marginLeft: "1rem",
+              background: "transparent",
+              color: "#667eea",
+              border: "1px solid #667eea",
             }}
           >
             Entrar
-          </button>
+          </Button>
+          <Button variant="header" onClick={() => router.push("/register")}>
+            Cadastrar
+          </Button>
         </nav>
       </div>
     </header>
