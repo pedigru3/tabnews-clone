@@ -1,7 +1,8 @@
 import { createRouter } from "next-connect"
 import controller from "infra/controller"
-const router = createRouter()
 import user from "models/user.js"
+
+const router = createRouter()
 
 router.post(postHandler)
 

@@ -3,7 +3,6 @@ import controller from "infra/controller"
 const router = createRouter()
 import authentication from "models/authentication.js"
 import session from "models/session.js"
-import * as cookie from "cookie"
 
 router.post(postHandler)
 
@@ -19,14 +18,7 @@ async function postHandler(request, response) {
 
   const newSession = await session.create(authenticatedUser.id)
 
-  const setCookie = cookie.serialize("session_id", newSession.token, {
-    path: "/",
-    maxAge: session.EXPIRATION_IN_MILLISECONDS / 1000,
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-  })
-
-  response.setHeader("Set-Cookie", setCookie)
+  controller.setSessionCookie(newSession.token, response)
 
   response.status(201).json(newSession)
 }
